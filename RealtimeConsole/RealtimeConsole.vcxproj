@@ -60,15 +60,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AsciiRenderer.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="ConsoleImpl.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MathHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AsciiRenderer.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="ConsoleImpl.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="KeyCode.h" />
+    <ClInclude Include="MathHelpers.h" />
+    <ClInclude Include="Vector3f.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
