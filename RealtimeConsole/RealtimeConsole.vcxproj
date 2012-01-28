@@ -41,6 +41,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -65,6 +66,10 @@
     <ClCompile Include="ConsoleImpl.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathHelpers.cpp" />
+    <ClCompile Include="Matrix4x4f.cpp" />
+    <ClInclude Include="Matrix4x4f.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsciiRenderer.h" />

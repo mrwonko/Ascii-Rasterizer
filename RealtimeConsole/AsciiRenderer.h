@@ -1,6 +1,10 @@
 #ifndef ASCII_RENDERER_H
 #define ASCII_RENDERER_H
 
+#include "Vector3f.h"
+#include "Matrix4x4f.h"
+#include <cfloat>
+
 class Vector3f;
 
 class AsciiRenderer
@@ -9,7 +13,7 @@ public:
 	AsciiRenderer();
 	~AsciiRenderer();
 
-	const bool Init(const unsigned int width, const unsigned int height);
+	const bool Init(const unsigned int width, const unsigned int height, float fov, float nearClip, float farClip);
 	void SetMaterial(const char material);
 
 
@@ -17,20 +21,29 @@ public:
 	const unsigned int GetHeight() const { return m_Height; }
 	const char * const * const GetColorBuffer() const { return m_ColorBuffer; }
 
-	void ClearDepth(); //todo: implement!
-	void ClearColor(); //todo: implement!
+	void DrawTriangle(const Vector3f& p1, const Vector3f& p2, const Vector3f& p3);
+	void ClearDepth(const float depth = FLT_MIN);
+	void ClearColor(const char col = ' ');
 	
-	void OrthoDrawTriangle(const Vector3f& p1, const Vector3f& p2, const Vector3f& p3); //todo: move to private once tested
+	void ApplyModelviewMatrix(const Matrix4x4f& mat) { m_ModelviewMatrix = m_ModelviewMatrix * mat; }
+	void ApplyProjectionMatrix(const Matrix4x4f& mat) { m_ProjectionMatrix = m_ProjectionMatrix * mat; }
+	
 private:
-	void DrawPixel(const int x, const int y, const short z);
-
+	void OrthoDrawTriangle(const Vector3f& p1, const Vector3f& p2, const Vector3f& p3);
+	void DrawPixel(const int x, const int y, const float z);
 	void CreateBuffers(const unsigned int width, const unsigned int height);
+
+	const Vector3f ProcessVector(const Vector3f& vec) const; //applies modelview and projection matrix
 
 	char m_CurrentMaterial;
 	unsigned int m_Width;
 	unsigned int m_Height;
 	char** m_ColorBuffer; //[y][x]
-	short** m_DepthBuffer;
+	float** m_DepthBuffer;
+	Matrix4x4f m_ModelviewMatrix;
+	Matrix4x4f m_ProjectionMatrix;
+	float m_NearClip;
+	float m_FarClip;
 };
 
 #endif

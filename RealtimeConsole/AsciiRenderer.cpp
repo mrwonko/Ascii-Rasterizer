@@ -1,7 +1,7 @@
 #include "AsciiRenderer.h"
+#include "MathHelpers.h"
 #include <cstring> //NULL
 #include <cassert> //assert()
-#include "Vector3f.h"
 #include <algorithm>
 
 AsciiRenderer::AsciiRenderer() :
@@ -17,11 +17,14 @@ AsciiRenderer::~AsciiRenderer()
 {
 }
 
-const bool AsciiRenderer::Init(const unsigned int width, const unsigned int height)
+const bool AsciiRenderer::Init(const unsigned int width, const unsigned int height, float fov, float nearClip, float farClip)
 {
 	assert(width > 0);
 	assert(height > 0);
 	CreateBuffers(width, height);
+	m_ProjectionMatrix = Matrix4x4f::PerspectiveProjection(fov, nearClip, farClip, float(width)/float(height));
+	m_NearClip = nearClip;
+	m_FarClip = farClip;
 	return true;
 }
 
@@ -32,11 +35,11 @@ void AsciiRenderer::CreateBuffers(const unsigned int width, const unsigned int h
 	m_Width = width;
 	m_Height = height;
 	m_ColorBuffer = new char*[height];
-	m_DepthBuffer = new short*[height];
+	m_DepthBuffer = new float*[height];
 	for(unsigned int y = 0; y < height; ++y)
 	{
 		m_ColorBuffer[y] = new char[width];
-		m_DepthBuffer[y] = new short[width];
+		m_DepthBuffer[y] = new float[width];
 	}
 	ClearColor();
 	ClearDepth();
@@ -62,25 +65,36 @@ void AsciiRenderer::OrthoDrawTriangle(const Vector3f& p1, const Vector3f& p2, co
 	}
 
 	//For every line occupied by this triangle:
-	int end = Round(bot->Y);
-	for(int y = Round(top->Y); y <= end; ++y)
+	int end = int(Round(bot->Y));
+	for(int y = int(Round(top->Y)); y <= end; ++y)
 	{
-		float h = (bot->Y - top->Y); //prevent divide by zero
-		if(h == 0.f) h = .1f;
-		//calculate position of point on line between top and bottom at "y" height
-		Vector3f leftVec = Vector3f::VecLERP(*top, *bot, (y - top->Y) / h);
+		//left position - between top & bot
+		Vector3f leftVec, rightVec;
+		if(FloatEqual(Round(bot->Y), Round(top->Y))) //both at the same height? take the left one then.
+		{
+			leftVec = top->X < bot->X ? *top : *bot;
+		}
+		else //otherwise: LERP
+		{
+			leftVec = Vector3f::VecLERP(*top, *bot, (y - top->Y) / (bot->Y - top->Y));
+		}
 
-		h = (mid->Y - top->Y);
-		if(h == 0.f) h = .1f;
-		//calculate position of point on line between top and middle / middle and bottom (depending on y) at "y" height
-		Vector3f rightVec = Vector3f::VecLERP(*top, *mid, (y - top->Y) / h);
-		if(h < 1.f) rightVec = *mid; 
-
+		//right position
+		const Vector3f* rTop = top;
+		const Vector3f* rBot = mid;
 		if(y > mid->Y)
 		{
-			h = (bot->Y - mid->Y);
-			if(h == 0.f) h = 1.f;
-			rightVec = Vector3f::VecLERP(*mid, *bot, (y - mid->Y) / h);
+			rTop = mid;
+			rBot = bot;
+		}
+		//same height? Use right one
+		if(FloatEqual(Round(rTop->Y), Round(rBot->Y)))
+		{
+			rightVec = rTop->X > rBot->X ? *rTop : *rBot;
+		}
+		else //LERP
+		{
+			rightVec = Vector3f::VecLERP(*rTop, *rBot, (y - rTop->Y) / (rBot->Y - rTop->Y));
 		}
 		//swap em if necessary so we know which one's left
 		if(leftVec.X > rightVec.X)
@@ -88,10 +102,12 @@ void AsciiRenderer::OrthoDrawTriangle(const Vector3f& p1, const Vector3f& p2, co
 			std::swap(leftVec, rightVec);
 		}
 		//fill pixels from left to right
-		int right = Round(rightVec.X);
-		for(int x = Round(leftVec.X); x <= right; ++x)
+		int left = int(Round(leftVec.X));
+		int right = int(Round(rightVec.X));
+		int width = right - left;
+		for(int x = 0; x <= width; ++x)
 		{
-			DrawPixel(x, y, Round(Vector3f::VecLERP(leftVec, rightVec, (x - leftVec.X) / (rightVec.X - leftVec.X)).Z));
+			DrawPixel(left + x, y, LERP(leftVec.X, rightVec.X, (FloatEqual(width, 0.f) ? 0.f : x / width)));
 		}
 	}
 }
@@ -101,37 +117,56 @@ void AsciiRenderer::SetMaterial(const char material)
 	m_CurrentMaterial = material;
 }
 
-void AsciiRenderer::DrawPixel(const int x, const int y, const short z)
+void AsciiRenderer::DrawPixel(const int x, const int y, const float z)
 {
 	if(x < 0) return;
 	if(x >= m_Width) return;
 	if(y < 0) return;
 	if(y >= m_Height) return;
 
-	if(z > m_DepthBuffer[y][x]) return;
+	if(z < m_DepthBuffer[m_Height - 1 - y][x])
+	{
+		return;
+	}
 
-	m_DepthBuffer[y][x] = z;
-	m_ColorBuffer[y][x] = m_CurrentMaterial;
+	m_DepthBuffer[m_Height - 1 - y][x] = z; // y is up!
+	m_ColorBuffer[m_Height - 1 - y][x] = m_CurrentMaterial;
 }
 
-void AsciiRenderer::ClearColor()
+void AsciiRenderer::ClearColor(const char col)
 {
 	for(unsigned int y = 0; y < m_Height; ++y)
 	{
 		for(unsigned int x = 0; x < m_Width; ++x)
 		{
-			m_ColorBuffer[y][x] = ' ';
+			m_ColorBuffer[y][x] = col;
 		}
 	}
 }
 
-void AsciiRenderer::ClearDepth()
+void AsciiRenderer::ClearDepth(const float depth)
 {
 	for(unsigned int y = 0; y < m_Height; ++y)
 	{
 		for(unsigned int x = 0; x < m_Width; ++x)
 		{
-			m_DepthBuffer[y][x] = SHRT_MAX;
+			m_DepthBuffer[y][x] = depth;
 		}
 	}
+}
+
+const Vector3f AsciiRenderer::ProcessVector(const Vector3f& vec) const
+{
+	Vector4f out = (m_ProjectionMatrix) * (m_ModelviewMatrix * Vector4f(vec));
+	out = out / out.W; // for perspective 
+	return Vector3f(
+		m_Width/2.f*(1+out.X),
+		m_Height/2.f * (1 + out.Y),
+		(m_FarClip - m_NearClip)/2.f*out.Z + (m_FarClip - m_NearClip)/2.f
+		);
+}
+
+void AsciiRenderer::DrawTriangle(const Vector3f& p1, const Vector3f& p2, const Vector3f& p3)
+{
+	OrthoDrawTriangle(ProcessVector(p1), ProcessVector(p2), ProcessVector(p3));
 }

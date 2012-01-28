@@ -6,28 +6,49 @@
 #include "AsciiRenderer.h"
 #include "Vector3f.h"
 #include "Windows.h"
+#include "Matrix4x4f.h"
 
 #include "MathHelpers.h"
+//#include <cassert>
 
 int main(int argc, char** argv)
 {
+	//Matrix4x4f mat = Matrix4x4f::PerspectiveProjection(90, 0.1, 100, 1.f/1.f);
+	//assert((mat * Matrix4x4f()) == mat); //works :)
+
 	if(1) //renderer test
 	{
 		AsciiRenderer renderer;
-		if(!renderer.Init(20, 20))
+		if(!renderer.Init(80, 40, 90, 0.1f, 100.f))
 		{
 			std::cout<<"Could not init!"<<std::endl;
 			return 0;
 		}
 
-		renderer.SetMaterial('#');
-		renderer.OrthoDrawTriangle(Vector3f(2, 2, 1), Vector3f(15, 7, 1), Vector3f(10, 17, 1));
+		//not necessary here, but keep them in mind
+		renderer.ClearColor();
+		renderer.ClearDepth();
+
+		//move 10 units back
+		renderer.ApplyModelviewMatrix(Matrix4x4f::Translation(Vector3f(0, 0, -10)));
 		
+		renderer.SetMaterial('#');
+		renderer.DrawTriangle(Vector3f(5, -5, 0), Vector3f(5, 5, 0), Vector3f(5, 5, -10));
 		renderer.SetMaterial('o');
-		renderer.OrthoDrawTriangle(Vector3f(0, 15, 1), Vector3f(0, 20, 1), Vector3f(5, 20, 1));
+		renderer.DrawTriangle(Vector3f(5, -5, 0), Vector3f(5, -5, -10), Vector3f(5, 5, -10));
+		
+		renderer.SetMaterial('+');
+		renderer.DrawTriangle(Vector3f(-15, -5, 0), Vector3f(-15, 5, 0), Vector3f(-5, 5, -10));
+		renderer.SetMaterial('c');
+		renderer.DrawTriangle(Vector3f(-15, -5, 0), Vector3f(-5, -5, -10), Vector3f(-5, 5, -10));
+	
 		
 		renderer.SetMaterial('x');
-		renderer.OrthoDrawTriangle(Vector3f(14, 0, 1), Vector3f(19, 0, 1), Vector3f(19, 5, 1));
+		//renderer.OrthoDrawTriangle(Vector3f(14, 0, 1), Vector3f(19, 0, 1), Vector3f(19, 5, 1));
+		
+
+		//renderer.DrawTriangle(Vector3f(2, 2, -5), Vector3f(2, 12, -5), Vector3f(12, 12, -5));
+		//renderer.DrawTriangle(Vector3f(2, 2, -5), Vector3f(12, 2, -5), Vector3f(12, 12, -5));
 
 		std::stringstream ss;
 		char const * const * const colBuf = renderer.GetColorBuffer();
