@@ -19,44 +19,118 @@ int main(int argc, char** argv)
 	if(1) //renderer test
 	{
 		AsciiRenderer renderer;
-		if(!renderer.Init(80, 40, 90, 0.1f, 100.f))
+		if(!renderer.Init(80, 40, 90, 0.1f, 100.f) || !Console::Init()) //console init is required for GotoXY even though it's actually not
+		//if(!renderer.Init(80, 40, 90, 0.1f, 25.f) || !Console::Init()) //console init is required for GotoXY even though it's actually not
 		{
 			std::cout<<"Could not init!"<<std::endl;
 			return 0;
 		}
 
-		//not necessary here, but keep them in mind
-		renderer.ClearColor();
-		renderer.ClearDepth();
+		if(0) // z value test
+		{
+			Vector3f vecs[] =
+			{
+				Vector3f(0, 0, -1.f),
+				Vector3f(0, 0, 0.1f),
+				Vector3f(0, 0, 1.f),
+				Vector3f(0, 0, 25.f),
+				Vector3f(0, 0, 50.f),
+				Vector3f(0, 0, 100.f),
+				Vector3f(0, 0, 150.f),
+				Vector3f(0, 0, 0.f),
+			};
+			for(unsigned int i = 0; i < 8; ++i)
+			{
+				std::cout<<vecs[i].Z << " -> " << renderer.ProcessVector(vecs[i]).Z << std::endl;
+			}
+			system("pause");
+			return 0;
+		}
 
-		//move 10 units back
-		renderer.ApplyModelviewMatrix(Matrix4x4f::Translation(Vector3f(0, 0, -10)));
-		
-		renderer.SetMaterial('#');
-		renderer.DrawTriangle(Vector3f(5, -5, 0), Vector3f(5, 5, 0), Vector3f(5, 5, -10));
-		renderer.SetMaterial('o');
-		renderer.DrawTriangle(Vector3f(5, -5, 0), Vector3f(5, -5, -10), Vector3f(5, 5, -10));
-		
-		renderer.SetMaterial('+');
-		renderer.DrawTriangle(Vector3f(-15, -5, 0), Vector3f(-15, 5, 0), Vector3f(-5, 5, -10));
-		renderer.SetMaterial('c');
-		renderer.DrawTriangle(Vector3f(-15, -5, 0), Vector3f(-5, -5, -10), Vector3f(-5, 5, -10));
-	
-		
-		renderer.SetMaterial('x');
-		//renderer.OrthoDrawTriangle(Vector3f(14, 0, 1), Vector3f(19, 0, 1), Vector3f(19, 5, 1));
-		
 
-		//renderer.DrawTriangle(Vector3f(2, 2, -5), Vector3f(2, 12, -5), Vector3f(12, 12, -5));
-		//renderer.DrawTriangle(Vector3f(2, 2, -5), Vector3f(12, 2, -5), Vector3f(12, 12, -5));
+		while(true)
+		{
+			unsigned long long ms_start = GetTimeMS();
+			renderer.ClearColor();
+			renderer.ClearDepth();
 
+			//move 10 units back
+			renderer.SetModelviewMatrix(Matrix4x4f::Translation(Vector3f(0, 0, -20)));
+			renderer.ApplyModelviewMatrix(Matrix4x4f::SimpleRotation(0.f, (ms_start % (5000)) * (360.f / 5000.f) / 180.f * 3.1415f));
+		
+			//renderer.SetMaterial('#');
+			//renderer.DrawTriangle(Vector3f(-2, -1, 0), Vector3f(2, -1, 0), Vector3f(0, 2, 0));
+
+			
+			renderer.SetMaterial('#');
+			renderer.DrawTriangle(Vector3f(5, -5, 0), Vector3f(5, 5, 0), Vector3f(5, 5, -10));
+			renderer.SetMaterial('o');
+			renderer.DrawTriangle(Vector3f(5, -5, 0), Vector3f(5, -5, -10), Vector3f(5, 5, -10));
+		
+			renderer.SetMaterial('+');
+			renderer.DrawTriangle(Vector3f(-15, -5, 0), Vector3f(-15, 5, 0), Vector3f(-5, 5, -10));
+			renderer.SetMaterial('c');
+			renderer.DrawTriangle(Vector3f(-15, -5, 0), Vector3f(-5, -5, -10), Vector3f(-5, 5, -10));
+			
+
+			std::stringstream ss;
+			char const * const * const colBuf = renderer.GetColorBuffer();
+			for(unsigned int y = 0; y < renderer.GetHeight(); ++y)
+			{
+				ss << std::string(colBuf[y], renderer.GetWidth());// << "\n"; //if width is not correct
+			}
+			Console::GotoXY(0, 0);
+			fputs(ss.str().c_str(), stdout);
+		}
+
+		if(0)
+		{
+			renderer.SetMaterial('T'); //for Test
+			renderer.OrthoDrawTriangle(Vector3f(5, 5, 2), Vector3f(5, 15, 2), Vector3f(-5, 10, 2));
+			renderer.SetMaterial('U');
+			renderer.OrthoDrawTriangle(Vector3f(10, 5, 2), Vector3f(10, 15, 2), Vector3f(15, 10, 2));
+			renderer.SetMaterial('V');
+			renderer.OrthoDrawTriangle(Vector3f(25, 10, 2), Vector3f(25, 20, 2), Vector3f(15, 15, 2));
+			//renderer.DrawTriangle(Vector3f(-5, -5, -5), Vector3f(5, -5, -5), Vector3f(0, -5, -150));
+
+			std::stringstream ss;
+			char const * const * const colBuf = renderer.GetColorBuffer();
+			for(unsigned int y = 0; y < renderer.GetHeight(); ++y)
+			{
+				ss << std::string(colBuf[y], renderer.GetWidth());// << "\n"; //if width is not correct
+			}
+			Console::GotoXY(0, 0);
+			fputs(ss.str().c_str(), stdout);
+			system("pause");
+			return 0;
+		}
+
+		renderer.SetMaterial('1');
+		renderer.DrawTriangle(Vector3f(-2, 0, -4), Vector3f(0, 0, -4), Vector3f(0, 2, -4));
+		renderer.SetMaterial('2');
+		renderer.DrawTriangle(Vector3f(-2, 0.5f, -3.9f), Vector3f(0, 0.5f, -3.9f), Vector3f(0, 2.5f, -3.9f));
+
+		renderer.SetMaterial('3');
+		renderer.DrawTriangle(Vector3f(-2, 0, 4), Vector3f(0, 0, 4), Vector3f(0, 2, 4));
+		
+		renderer.SetMaterial('.');
+		renderer.DrawTriangle(Vector3f(-10, 0, -10), Vector3f(-10, 0, -10), Vector3f(10, 0, -10));
+
+		renderer.SetMaterial('4');
+		renderer.SetModelviewMatrix(Matrix4x4f::Translation(Vector3f(-2, 0, -10)));
+		renderer.DrawTriangle(Vector3f(-2, -1, 0), Vector3f(0, -1, 0), Vector3f(0, 2, 0));
+		
 		std::stringstream ss;
 		char const * const * const colBuf = renderer.GetColorBuffer();
 		for(unsigned int y = 0; y < renderer.GetHeight(); ++y)
 		{
-			ss << std::string(colBuf[y], renderer.GetWidth()) << "\n";
+			ss << std::string(colBuf[y], renderer.GetWidth());// << "\n"; //if width is not correct
 		}
+		Console::GotoXY(0, 0);
 		fputs(ss.str().c_str(), stdout);
+		
+		//unsigned long long ms_end = GetTimeMS();
+		//std::cout<<"Drawtime: " << ms_end - ms_start << " ms" <<std::endl;
 
 		system("pause");
 

@@ -19,6 +19,7 @@ public:
 
 	static Matrix4x4f PerspectiveProjection(float fov, float near, float far, float aspect);
 	static Matrix4x4f Translation(const Vector3f& translation);
+	static Matrix4x4f SimpleRotation(float pitch, float yaw);
 
 	Matrix4x4f operator *(const Matrix4x4f& rhs) const;
 

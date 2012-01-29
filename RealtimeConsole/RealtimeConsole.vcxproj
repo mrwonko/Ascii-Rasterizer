@@ -67,9 +67,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathHelpers.cpp" />
     <ClCompile Include="Matrix4x4f.cpp" />
+    <ClCompile Include="WAAF.cpp" />
     <ClInclude Include="Matrix4x4f.h">
       <FileType>CppCode</FileType>
     </ClInclude>
+    <ClInclude Include="WAAF.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsciiRenderer.h" />

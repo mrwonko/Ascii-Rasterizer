@@ -17,3 +17,23 @@ const bool FloatEqual(const float lhs, const float rhs)
 {
 	return (lhs - ACCEPTABLE_DELTA < rhs && lhs + ACCEPTABLE_DELTA > rhs);
 }
+
+#ifdef _WIN32
+#include <Windows.h>
+
+const unsigned long long GetTimeMS()
+{
+	SYSTEMTIME sysTime;
+	GetSystemTime(&sysTime);
+	FILETIME fileTime;
+	SystemTimeToFileTime(&sysTime, &fileTime);
+	ULARGE_INTEGER uli;
+	uli.LowPart = fileTime.dwLowDateTime;
+	uli.HighPart = fileTime.dwHighDateTime;
+
+	return uli.QuadPart / 10000;
+}
+
+#else
+#error GetTimeMS() not implemented for this OS
+#endif

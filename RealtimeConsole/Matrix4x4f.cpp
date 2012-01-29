@@ -60,7 +60,7 @@ Matrix4x4f Matrix4x4f::PerspectiveProjection(float fov, float near, float far, f
 	if(1)
 	{
 		//http://www.opengl.org/sdk/docs/man/xhtml/glFrustum.xml + http://nehe.gamedev.net/article/replacement_for_gluperspective/21002/ + brain
-		float fH = tan( fov / 360 * M_PI ) * near;
+		float fH = tan( fov / 360.f * M_PI ) * near;
 		float fW = fH * aspect;
 
 		return Matrix4x4f(
@@ -105,6 +105,19 @@ Matrix4x4f Matrix4x4f::Translation(const Vector3f& translation)
 	mat._24 = translation.Y;
 	mat._34 = translation.Z;
 	return mat;
+}
+
+Matrix4x4f Matrix4x4f::SimpleRotation(float pitch, float yaw)
+{
+	Matrix4x4f pitchMat; //identity
+	pitchMat._22 = pitchMat._33 = cos(pitch);
+	pitchMat._32 = sin(pitch);
+	pitchMat._23 = - pitchMat._32; //-sin
+	Matrix4x4f yawMat;
+	yawMat._11 = yawMat._33 = cos(yaw);
+	yawMat._13 = sin(yaw);
+	yawMat._31 = - yawMat._13; //-sin
+	return pitchMat * yawMat;
 }
 
 const Vector3f operator * (const Matrix4x4f& mat, const Vector3f& vec)

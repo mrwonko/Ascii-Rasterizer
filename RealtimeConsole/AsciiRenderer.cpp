@@ -21,10 +21,10 @@ const bool AsciiRenderer::Init(const unsigned int width, const unsigned int heig
 {
 	assert(width > 0);
 	assert(height > 0);
-	CreateBuffers(width, height);
 	m_ProjectionMatrix = Matrix4x4f::PerspectiveProjection(fov, nearClip, farClip, float(width)/float(height));
 	m_NearClip = nearClip;
 	m_FarClip = farClip;
+	CreateBuffers(width, height); //calls clearDepth which needs farClip, thus last
 	return true;
 }
 
@@ -65,8 +65,11 @@ void AsciiRenderer::OrthoDrawTriangle(const Vector3f& p1, const Vector3f& p2, co
 	}
 
 	//For every line occupied by this triangle:
+	int start = int(Round(top->Y));
 	int end = int(Round(bot->Y));
-	for(int y = int(Round(top->Y)); y <= end; ++y)
+	if(start < 0) start = 0; //no need to draw outside the screen
+	if(end >= m_Height) end = m_Height - 1;
+	for(int y = start; y <= end; ++y)
 	{
 		//left position - between top & bot
 		Vector3f leftVec, rightVec;
@@ -104,10 +107,12 @@ void AsciiRenderer::OrthoDrawTriangle(const Vector3f& p1, const Vector3f& p2, co
 		//fill pixels from left to right
 		int left = int(Round(leftVec.X));
 		int right = int(Round(rightVec.X));
+		if(left < 0) left = 0; //no need to draw outside the screen
+		if(right >= m_Width) right = m_Width - 1;
 		int width = right - left;
 		for(int x = 0; x <= width; ++x)
 		{
-			DrawPixel(left + x, y, LERP(leftVec.X, rightVec.X, (FloatEqual(width, 0.f) ? 0.f : x / width)));
+			DrawPixel(left + x, y, LERP(leftVec.Z, rightVec.Z, (FloatEqual(rightVec.X - leftVec.X, 0.f) ? 0.f : ((x + left - leftVec.X)  / (rightVec.X - leftVec.X)))));
 		}
 	}
 }
@@ -124,13 +129,21 @@ void AsciiRenderer::DrawPixel(const int x, const int y, const float z)
 	if(y < 0) return;
 	if(y >= m_Height) return;
 
-	if(z < m_DepthBuffer[m_Height - 1 - y][x])
+	if(z < m_NearClip) //near
 	{
 		return;
 	}
 
-	m_DepthBuffer[m_Height - 1 - y][x] = z; // y is up!
-	m_ColorBuffer[m_Height - 1 - y][x] = m_CurrentMaterial;
+	//if(z > m_DepthBuffer[m_Height - 1 - y][x])
+	if(z > m_DepthBuffer[y][x])
+	{
+		return;
+	}
+
+	//m_DepthBuffer[m_Height - 1 - y][x] = z; // y is up!
+	//m_ColorBuffer[m_Height - 1 - y][x] = m_CurrentMaterial;
+	m_DepthBuffer[y][x] = z;
+	m_ColorBuffer[y][x] = m_CurrentMaterial;
 }
 
 void AsciiRenderer::ClearColor(const char col)
@@ -144,13 +157,13 @@ void AsciiRenderer::ClearColor(const char col)
 	}
 }
 
-void AsciiRenderer::ClearDepth(const float depth)
+void AsciiRenderer::ClearDepth()
 {
 	for(unsigned int y = 0; y < m_Height; ++y)
 	{
 		for(unsigned int x = 0; x < m_Width; ++x)
 		{
-			m_DepthBuffer[y][x] = depth;
+			m_DepthBuffer[y][x] = m_FarClip;
 		}
 	}
 }
@@ -162,7 +175,8 @@ const Vector3f AsciiRenderer::ProcessVector(const Vector3f& vec) const
 	return Vector3f(
 		m_Width/2.f*(1+out.X),
 		m_Height/2.f * (1 + out.Y),
-		(m_FarClip - m_NearClip)/2.f*out.Z + (m_FarClip - m_NearClip)/2.f
+		(m_FarClip - m_NearClip)/2.f*out.Z + (m_FarClip + m_NearClip)/2.f
+		//out.Z //let's keep these in range -1 .. 1
 		);
 }
 
