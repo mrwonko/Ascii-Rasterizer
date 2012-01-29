@@ -82,7 +82,7 @@ void ConsoleImpl::Update()
 	{
 		m_MouseMoveQueue.push_back(delta);
 	}
-	if(0)
+	if(1)
 	{
 		SetCursorPos(m_PreviousMousePos.x, m_PreviousMousePos.y);
 	}

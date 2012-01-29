@@ -78,7 +78,10 @@ const bool WAAF::LoadFromFile(const std::string& filename)
 		}
 	}
 
-	//TODO: Read gameplay data
+	file.read(reinterpret_cast<char*>(&m_PlayerPos.X), sizeof(float));
+	file.read(reinterpret_cast<char*>(&m_PlayerPos.Y), sizeof(float));
+	file.read(reinterpret_cast<char*>(&m_PlayerPos.Z), sizeof(float));
+	m_PlayerPos.Y += 0.75f; //half player height, fixme: un-hardcode this (= softcode?)
 
 	//  Read PhysMesh
 	{

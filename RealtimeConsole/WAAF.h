@@ -12,7 +12,7 @@ class btBvhTriangleMeshShape;
 
 class WAAF
 {
-	static const unsigned int VERSION = 3;
+	static const unsigned int VERSION = 4;
 
 public:
 	WAAF();
@@ -23,6 +23,8 @@ public:
 	void Render(AsciiRenderer& renderer) const;
 
 	btBvhTriangleMeshShape* GetPhysMesh() { return m_OtherPhysMesh; }
+
+	const Vector3f& GetPlayerPos() const { return m_PlayerPos; }
 
 private:
 	struct RenderMesh
@@ -37,7 +39,7 @@ private:
 	};
 	RenderMesh m_RenderMesh;
 
-	//todo: gameplay info goes here
+	Vector3f m_PlayerPos;
 
 	btTriangleIndexVertexArray* m_PhysMesh;
 	btBvhTriangleMeshShape* m_OtherPhysMesh;

@@ -36,7 +36,7 @@ bl_info = {
 import os, struct
 import bpy
 
-VERSION = 3 # keep in sync with game
+VERSION = 4 # keep in sync with game
 
 # write a coordinate, changing it from z-up to y-up
 def WriteCoord(file, co):
@@ -62,6 +62,11 @@ def WriteVisible(file, obj):
             co = mesh.vertices[vertex].co
             #WriteCoord(file, matrix * co)
             WriteCoord(file, co)
+
+def WritePlayer(file):
+	obj = bpy.data.objects["Player"]
+	pos = obj.matrix_world.to_translation()
+	WriteCoord(file, pos)
 
 def WritePhysics(file, obj):
     assert(obj.type == 'MESH')
