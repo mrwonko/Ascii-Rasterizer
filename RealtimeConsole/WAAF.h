@@ -7,10 +7,12 @@
 #include "Vector3f.h"
 
 class AsciiRenderer;
+class btTriangleIndexVertexArray;
+class btBvhTriangleMeshShape;
 
 class WAAF
 {
-	static const unsigned int VERSION = 1;
+	static const unsigned int VERSION = 3;
 
 public:
 	WAAF();
@@ -19,6 +21,8 @@ public:
 	const bool LoadFromFile(const std::string& filename);
 
 	void Render(AsciiRenderer& renderer) const;
+
+	btBvhTriangleMeshShape* GetPhysMesh() { return m_OtherPhysMesh; }
 
 private:
 	struct RenderMesh
@@ -35,20 +39,8 @@ private:
 
 	//todo: gameplay info goes here
 
-	struct PhysMesh
-	{
-		unsigned int numVertices;
-		typedef Vector3f Vertex;
-		Vertex* vertices;
-
-		unsigned int numFaces;
-		struct Face
-		{
-			unsigned int indices[3];
-		};
-		Face* faces;
-	};
-	PhysMesh m_PhysMesh;
+	btTriangleIndexVertexArray* m_PhysMesh;
+	btBvhTriangleMeshShape* m_OtherPhysMesh;
 };
 
 #endif

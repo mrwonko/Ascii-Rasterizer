@@ -13,6 +13,7 @@ public:
 	AsciiRenderer();
 	~AsciiRenderer();
 
+	//also: re-init
 	const bool Init(const unsigned int width, const unsigned int height, float fov, float nearClip, float farClip);
 	void SetMaterial(const char material);
 
@@ -34,6 +35,8 @@ public:
 private:
 	void DrawPixel(const int x, const int y, const float z);
 	void CreateBuffers(const unsigned int width, const unsigned int height);
+
+	void SetSize(const unsigned int width, const unsigned int height);
 
 
 	char m_CurrentMaterial;

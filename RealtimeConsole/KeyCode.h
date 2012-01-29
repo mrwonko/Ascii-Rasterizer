@@ -45,6 +45,7 @@ enum KeyCode
 	KEYCODE_RETURN = 256,
 	KEYCODE_ESCAPE,
 	KEYCODE_TAB,
+	KEYCODE_SPACE,
 };
 
 #endif

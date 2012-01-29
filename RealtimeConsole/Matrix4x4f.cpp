@@ -120,6 +120,16 @@ Matrix4x4f Matrix4x4f::SimpleRotation(float pitch, float yaw)
 	return pitchMat * yawMat;
 }
 
+Matrix4x4f Matrix4x4f::SimpleScale(float scale)
+{
+	return Matrix4x4f(
+		scale, 0, 0, 0,
+		0, scale, 0, 0,
+		0, 0, 0, scale,
+		0, 0, 0, 1
+		);
+}
+
 const Vector3f operator * (const Matrix4x4f& mat, const Vector3f& vec)
 {
 	return Vector3f(

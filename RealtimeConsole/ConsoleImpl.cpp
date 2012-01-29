@@ -14,6 +14,7 @@ namespace
 		if(winKey == VK_RETURN) return KEYCODE_RETURN;
 		if(winKey == VK_ESCAPE) return KEYCODE_ESCAPE;
 		if(winKey == VK_TAB) return KEYCODE_TAB;
+		if(winKey == VK_SPACE) return KEYCODE_SPACE;
 		return KEYCODE_NONE;
 	}
 }

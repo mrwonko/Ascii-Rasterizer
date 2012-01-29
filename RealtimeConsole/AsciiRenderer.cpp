@@ -19,6 +19,22 @@ AsciiRenderer::~AsciiRenderer()
 
 const bool AsciiRenderer::Init(const unsigned int width, const unsigned int height, float fov, float nearClip, float farClip)
 {
+	if(m_ColorBuffer != NULL)
+	{
+		for(unsigned int y = 0; y < m_Height; ++y)
+		{
+			delete[] m_ColorBuffer[y];
+		}
+		delete[] m_ColorBuffer;
+	}
+	if(m_DepthBuffer != NULL)
+	{
+		for(unsigned int y = 0; y < m_Height; ++y)
+		{
+			delete[] m_DepthBuffer[y];
+		}
+		delete[] m_DepthBuffer;
+	}
 	assert(width > 0);
 	assert(height > 0);
 	m_ProjectionMatrix = Matrix4x4f::PerspectiveProjection(fov, nearClip, farClip, float(width)/float(height));
